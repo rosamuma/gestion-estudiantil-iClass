@@ -11,11 +11,8 @@ class Student extends Model
     use HasFactory, SoftDeletes;
 
     protected $table    = 'students';
-    protected $fillable = [
-        'name', 'email', 'student_code', 'semester',
-        'status', 'program_id', 'enrollment_date', 'notes',
-    ];
-    protected $casts = ['enrollment_date' => 'date'];
+    protected $fillable = ['name','email','student_code','semester','status','program_id','enrollment_date','notes'];
+    protected $casts    = ['enrollment_date' => 'date'];
 
     public function program()     { return $this->belongsTo(Program::class); }
     public function grades()      { return $this->hasMany(Grade::class); }
@@ -25,6 +22,6 @@ class Student extends Model
     public function getAverageAttribute(): ?float
     {
         $avg = $this->grades()->whereNotNull('average')->avg('average');
-        return $avg ? round((float)$avg, 1) : null;
+        return $avg ? round((float) $avg, 1) : null;
     }
 }

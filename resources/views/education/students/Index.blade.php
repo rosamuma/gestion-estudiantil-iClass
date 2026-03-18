@@ -1,99 +1,134 @@
 <x-app-layout>
-    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
-        <x-app.navbar />
-        <div class="px-5 py-4 container-fluid">
+<main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+    <x-app.navbar />
+    <div class="px-4 py-4 container-fluid">
 
-            <div class="d-sm-flex align-items-center mb-4">
-                <div>
-                    <h4 class="font-weight-bold mb-0">Estudiantes</h4>
-                    <p class="text-secondary text-sm mb-0">Gestión de estudiantes matriculados</p>
-                </div>
-                <div class="ms-auto">
-                    <a href="{{ route('education.students.create') }}" class="btn btn-dark btn-sm mb-0">
-                        <i class="fas fa-plus me-2"></i>Nuevo Estudiante
-                    </a>
-                </div>
+        {{-- Header --}}
+        <div class="d-sm-flex align-items-center mb-4">
+            <div>
+                <h4 class="font-weight-bold mb-0">Estudiantes</h4>
+                <p class="text-secondary text-sm mb-0">{{ $students->total() }} estudiante(s) registrados</p>
             </div>
-
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            <div class="card shadow-xs border">
-                <div class="card-body px-0 py-0">
-                    <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0" id="datatable-students">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-3">Estudiante</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Código</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Programa</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Semestre</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Estado</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Promedio</th>
-                                    <th class="text-secondary opacity-7"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($students as $student)
-                                <tr>
-                                    <td class="ps-3">
-                                        <div class="d-flex align-items-center">
-                                            <div class="me-3 text-white d-flex align-items-center justify-content-center fw-bold"
-                                                style="width:34px;height:34px;border-radius:8px;background:#1e293b;font-size:12px;flex-shrink:0;">
-                                                {{ strtoupper(substr($student->name, 0, 2)) }}
-                                            </div>
-                                            <div>
-                                                <p class="text-sm font-weight-bold mb-0">{{ $student->name }}</p>
-                                                <p class="text-xs text-secondary mb-0">{{ $student->email }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><p class="text-sm mb-0">{{ $student->student_code ?? '—' }}</p></td>
-                                    <td><p class="text-sm mb-0">{{ $student->program->name ?? '—' }}</p></td>
-                                    <td class="text-center"><p class="text-sm mb-0">{{ $student->semester }}°</p></td>
-                                    <td class="text-center">
-                                        <span class="badge badge-sm bg-gradient-{{ $student->status === 'active' ? 'success' : ($student->status === 'graduated' ? 'info' : 'secondary') }}">
-                                            {{ ['active'=>'Activo','inactive'=>'Inactivo','graduated'=>'Graduado'][$student->status] }}
-                                        </span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="text-sm font-weight-bold {{ $student->average >= 6 ? 'text-success' : ($student->average ? 'text-danger' : 'text-secondary') }}">
-                                            {{ $student->average ?? '—' }}
-                                        </span>
-                                    </td>
-                                    <td class="text-end pe-3">
-                                        <a href="{{ route('education.students.edit', $student) }}"
-                                            class="btn btn-sm btn-outline-secondary mb-0 me-1">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-                                        <form action="{{ route('education.students.destroy', $student) }}" method="POST" class="d-inline"
-                                            onsubmit="return confirm('¿Eliminar estudiante {{ $student->name }}?')">
-                                            @csrf @method('DELETE')
-                                            <button class="btn btn-sm btn-outline-danger mb-0">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="7" class="text-center py-5 text-secondary">
-                                        No hay estudiantes registrados.
-                                        <a href="{{ route('education.students.create') }}">Crear el primero</a>
-                                    </td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="ms-auto">
+                <a href="{{ route('education.students.create') }}" class="btn btn-dark btn-sm mb-0">
+                    <i class="fas fa-plus me-1"></i> Nuevo Estudiante
+                </a>
             </div>
-
         </div>
-        <x-app.footer />
-    </main>
+
+        {{-- Alert --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show border-0 shadow-xs" role="alert" style="border-radius:12px;">
+                <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        {{-- Filtros --}}
+        <div class="card border-0 shadow-xs mb-4" style="border-radius:14px;">
+            <div class="card-body p-3">
+                <form method="GET" class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label text-xs text-secondary mb-1">Buscar</label>
+                        <input type="text" name="search" class="form-control form-control-sm"
+                            placeholder="Nombre, email o código…" value="{{ request('search') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-xs text-secondary mb-1">Programa</label>
+                        <select name="program_id" class="form-control form-control-sm">
+                            <option value="">Todos los programas</option>
+                            @foreach($programs as $p)
+                                <option value="{{ $p->id }}" {{ request('program_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-xs text-secondary mb-1">Estado</label>
+                        <select name="status" class="form-control form-control-sm">
+                            <option value="">Todos</option>
+                            <option value="active"    {{ request('status')==='active'    ? 'selected':'' }}>Activo</option>
+                            <option value="inactive"  {{ request('status')==='inactive'  ? 'selected':'' }}>Inactivo</option>
+                            <option value="graduated" {{ request('status')==='graduated' ? 'selected':'' }}>Graduado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1"><button type="submit" class="btn btn-dark btn-sm w-100">Buscar</button></div>
+                    <div class="col-md-2"><a href="{{ route('education.students.index') }}" class="btn btn-outline-secondary btn-sm w-100">Limpiar</a></div>
+                </form>
+            </div>
+        </div>
+
+        {{-- Tabla --}}
+        <div class="card border-0 shadow-xs" style="border-radius:14px;overflow:hidden;">
+            <div class="card-body px-0 py-0">
+                <div class="table-responsive">
+                    <table class="table align-items-center mb-0">
+                        <thead style="background:#f8fafc;">
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-4">Estudiante</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Código</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Programa</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Sem.</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Estado</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Promedio</th>
+                                <th class="text-secondary opacity-7 pe-4"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($students as $s)
+                            <tr style="border-bottom:1px solid #f1f5f9;">
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3 text-white fw-bold d-flex align-items-center justify-content-center flex-shrink-0"
+                                            style="width:36px;height:36px;background:#1e293b;border-radius:10px;font-size:12px;">
+                                            {{ strtoupper(substr($s->name,0,2)) }}
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-weight-bold mb-0">{{ $s->name }}</p>
+                                            <p class="text-xs text-secondary mb-0">{{ $s->email }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><span class="text-xs font-weight-bold">{{ $s->student_code ?? '—' }}</span></td>
+                                <td><p class="text-sm mb-0">{{ $s->program->name ?? '—' }}</p></td>
+                                <td class="text-center"><span class="badge bg-light text-dark">{{ $s->semester }}°</span></td>
+                                <td class="text-center">
+                                    @php $sc=['active'=>['success','Activo'],'inactive'=>['secondary','Inactivo'],'graduated'=>['info','Graduado']][$s->status]??['secondary',$s->status]; @endphp
+                                    <span class="badge badge-sm bg-gradient-{{ $sc[0] }}">{{ $sc[1] }}</span>
+                                </td>
+                                <td class="text-center">
+                                    @if($s->average !== null)
+                                        <span class="font-weight-bold {{ $s->average>=6?'text-success':'text-danger' }}">{{ $s->average }}</span>
+                                    @else
+                                        <span class="text-secondary">—</span>
+                                    @endif
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{{ route('education.students.edit', $s) }}" class="btn btn-xs btn-outline-secondary mb-0 me-1 px-2 py-1">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('education.students.destroy', $s) }}" method="POST" class="d-inline"
+                                        onsubmit="return confirm('¿Eliminar a {{ addslashes($s->name) }}?')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-xs btn-outline-danger mb-0 px-2 py-1"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="7" class="text-center py-5 text-secondary">
+                                No se encontraron estudiantes.
+                                <a href="{{ route('education.students.create') }}">Registrar el primero</a>
+                            </td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+                @if($students->hasPages())
+                <div class="px-4 py-3 border-top">{{ $students->links() }}</div>
+                @endif
+            </div>
+        </div>
+
+    </div>
+    <x-app.footer />
+</main>
 </x-app-layout>

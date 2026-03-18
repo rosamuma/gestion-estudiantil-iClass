@@ -11,27 +11,14 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'role',        // 'admin' | 'teacher' | 'student'
-        'phone',
-        'location',
-        'about',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'role', 'phone', 'location', 'about'];
 
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password'          => 'hashed',
     ];
-
-    // ── Helpers de rol ────────────────────────────────────────────────────────
 
     public function isAdmin(): bool   { return $this->role === 'admin'; }
     public function isTeacher(): bool { return $this->role === 'teacher'; }
@@ -44,6 +31,16 @@ class User extends Authenticatable
             'teacher' => 'Docente',
             'student' => 'Estudiante',
             default   => 'Usuario',
+        };
+    }
+
+    public function getRoleBadgeAttribute(): string
+    {
+        return match ($this->role) {
+            'admin'   => 'danger',
+            'teacher' => 'warning',
+            'student' => 'success',
+            default   => 'secondary',
         };
     }
 }

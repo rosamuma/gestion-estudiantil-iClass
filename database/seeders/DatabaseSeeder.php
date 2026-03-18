@@ -11,17 +11,15 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── Usuarios con roles ────────────────────────────────────────────────
         DB::table('users')->insert([
             ['name' => 'Admin Principal',     'email' => 'admin@edu.com',    'role' => 'admin',   'password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Dr. Carlos García',   'email' => 'garcia@edu.com',   'role' => 'teacher', 'password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Dra. Ana López',      'email' => 'lopez@edu.com',    'role' => 'teacher', 'password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now()],
-            ['name' => 'Lic. Jorge Martínez', 'email' => 'martinez@edu.com', 'role' => 'teacher', 'password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Ing. Jorge Martínez', 'email' => 'martinez@edu.com', 'role' => 'teacher', 'password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Ana Torres',          'email' => 'ana@edu.com',      'role' => 'student', 'password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Luis Martínez',       'email' => 'luis@edu.com',     'role' => 'student', 'password' => Hash::make('password123'), 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // ── Programas ─────────────────────────────────────────────────────────
         DB::table('programs')->insert([
             ['name' => 'Ingeniería de Sistemas', 'code' => 'ISI', 'duration_semesters' => 10, 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Medicina',               'code' => 'MED', 'duration_semesters' => 12, 'created_at' => now(), 'updated_at' => now()],
@@ -35,7 +33,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Matemáticas',            'code' => 'MAT', 'duration_semesters' => 10, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // ── Docentes ──────────────────────────────────────────────────────────
         DB::table('teachers')->insert([
             ['name' => 'Dr. Carlos García',    'email' => 'garcia_t@edu.com',    'specialty' => 'Matemáticas',    'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Dra. Ana López',       'email' => 'lopez_t@edu.com',     'specialty' => 'Física',         'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
@@ -46,7 +43,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Ing. Laura Torres',    'email' => 'torres_t@edu.com',    'specialty' => 'Bases de Datos', 'status' => 'active', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // ── Cursos ────────────────────────────────────────────────────────────
         DB::table('courses')->insert([
             ['name' => 'Matemáticas II',      'code' => 'MAT-201', 'teacher_id' => 1, 'program_id' => 1,  'credits' => 4, 'status' => 'active',   'description' => 'Álgebra lineal y cálculo multivariable.', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Física Cuántica',     'code' => 'FIS-301', 'teacher_id' => 2, 'program_id' => 8,  'credits' => 3, 'status' => 'active',   'description' => 'Introducción a la mecánica cuántica.',    'created_at' => now(), 'updated_at' => now()],
@@ -57,7 +53,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Bases de Datos',      'code' => 'BD-301',  'teacher_id' => 7, 'program_id' => 1,  'credits' => 3, 'status' => 'active',   'description' => 'SQL, diseño relacional y NoSQL.',          'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // ── Estudiantes ───────────────────────────────────────────────────────
         DB::table('students')->insert([
             ['name' => 'Ana Torres',     'email' => 'ana@edu.com',     'student_code' => '2024-001', 'semester' => 3, 'status' => 'active',   'program_id' => 1, 'enrollment_date' => '2024-01-15', 'created_at' => now(), 'updated_at' => now()],
             ['name' => 'Luis Martínez',  'email' => 'luis@edu.com',    'student_code' => '2024-002', 'semester' => 1, 'status' => 'active',   'program_id' => 2, 'enrollment_date' => '2024-01-15', 'created_at' => now(), 'updated_at' => now()],
@@ -71,7 +66,6 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Felipe Ortega',  'email' => 'felipe@edu.com',  'student_code' => '2022-055', 'semester' => 8, 'status' => 'active',   'program_id' => 9, 'enrollment_date' => '2022-01-15', 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // ── Inscripciones ─────────────────────────────────────────────────────
         DB::table('course_student')->insert([
             ['course_id' => 1, 'student_id' => 1, 'created_at' => now(), 'updated_at' => now()],
             ['course_id' => 1, 'student_id' => 6, 'created_at' => now(), 'updated_at' => now()],
@@ -85,7 +79,6 @@ class DatabaseSeeder extends Seeder
             ['course_id' => 7, 'student_id' => 8, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // ── Calificaciones ────────────────────────────────────────────────────
         DB::table('grades')->insert([
             ['student_id' => 1, 'course_id' => 1, 'period' => '2024-1', 'grade_1' => 9.5, 'grade_2' => 8.8, 'grade_3' => 9.0,  'average' => 9.1, 'created_at' => now(), 'updated_at' => now()],
             ['student_id' => 6, 'course_id' => 1, 'period' => '2024-1', 'grade_1' => 7.0, 'grade_2' => 6.5, 'grade_3' => 7.5,  'average' => 7.0, 'created_at' => now(), 'updated_at' => now()],
@@ -96,31 +89,19 @@ class DatabaseSeeder extends Seeder
             ['student_id' => 5, 'course_id' => 4, 'period' => '2024-1', 'grade_1' => 9.8, 'grade_2' => 9.5, 'grade_3' => 10.0, 'average' => 9.8, 'created_at' => now(), 'updated_at' => now()],
         ]);
 
-        // ── Asistencia (últimos 3 días) ───────────────────────────────────────
         $rows = [];
-        foreach (range(0, 2) as $d) {
+        foreach (range(0, 4) as $d) {
             $date = Carbon::today()->subDays($d)->format('Y-m-d');
-            foreach ([
-                [1,1,'present'],[6,1,'absent'],[8,1,'present'],
-                [2,2,'present'],[9,2,'justified'],
-                [3,3,'present'],[4,3,'absent'],
-                [5,4,'present'],
-            ] as [$sid,$cid,$status]) {
-                $rows[] = [
-                    'student_id' => $sid, 'course_id' => $cid,
-                    'date' => $date, 'status' => $status,
-                    'notes' => null, 'created_at' => now(), 'updated_at' => now(),
-                ];
+            foreach ([[1,1,'present'],[6,1,'absent'],[8,1,'present'],[2,2,'present'],[9,2,'justified'],[3,3,'present'],[4,3,'absent'],[5,4,'present']] as [$sid,$cid,$status]) {
+                $rows[] = ['student_id'=>$sid,'course_id'=>$cid,'date'=>$date,'status'=>$status,'notes'=>null,'created_at'=>now(),'updated_at'=>now()];
             }
         }
         DB::table('attendances')->insert($rows);
 
         $this->command->info('');
-        $this->command->info('✅  EduPlatform seeded correctamente!');
-        $this->command->info('');
-        $this->command->info('   admin@edu.com    / password123  (Admin)');
-        $this->command->info('   garcia@edu.com   / password123  (Docente)');
-        $this->command->info('   ana@edu.com      / password123  (Estudiante)');
-        $this->command->info('');
+        $this->command->info('✅  EduPlatform seeded!');
+        $this->command->info('   admin@edu.com  / password123  →  Administrador');
+        $this->command->info('   garcia@edu.com / password123  →  Docente');
+        $this->command->info('   ana@edu.com    / password123  →  Estudiante');
     }
 }

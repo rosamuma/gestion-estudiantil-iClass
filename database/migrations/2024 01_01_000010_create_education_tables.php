@@ -8,14 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // 1. Añadir role a users existente
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['admin', 'teacher', 'student'])
-                  ->default('student')
-                  ->after('email');
+            $table->enum('role', ['admin', 'teacher', 'student'])->default('student')->after('email');
         });
 
-        // 2. Programas
         Schema::create('programs', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -25,7 +21,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 3. Docentes
         Schema::create('teachers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -36,7 +31,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 4. Estudiantes
         Schema::create('students', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -51,7 +45,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 5. Cursos
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -65,7 +58,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 6. Inscripciones pivot
         Schema::create('course_student', function (Blueprint $table) {
             $table->id();
             $table->foreignId('course_id')->constrained()->cascadeOnDelete();
@@ -74,7 +66,6 @@ return new class extends Migration
             $table->unique(['course_id', 'student_id']);
         });
 
-        // 7. Calificaciones
         Schema::create('grades', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();
@@ -89,7 +80,6 @@ return new class extends Migration
             $table->unique(['student_id', 'course_id', 'period']);
         });
 
-        // 8. Asistencia
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->cascadeOnDelete();

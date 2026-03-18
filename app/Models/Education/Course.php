@@ -11,7 +11,7 @@ class Course extends Model
     use HasFactory, SoftDeletes;
 
     protected $table    = 'courses';
-    protected $fillable = ['name', 'code', 'teacher_id', 'program_id', 'credits', 'status', 'description'];
+    protected $fillable = ['name','code','teacher_id','program_id','credits','status','description'];
 
     public function teacher()     { return $this->belongsTo(Teacher::class); }
     public function program()     { return $this->belongsTo(Program::class); }

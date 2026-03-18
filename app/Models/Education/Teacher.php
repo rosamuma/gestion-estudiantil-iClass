@@ -11,7 +11,7 @@ class Teacher extends Model
     use HasFactory, SoftDeletes;
 
     protected $table    = 'teachers';
-    protected $fillable = ['name', 'email', 'specialty', 'status'];
+    protected $fillable = ['name','email','specialty','status'];
 
     public function courses() { return $this->hasMany(Course::class); }
 }

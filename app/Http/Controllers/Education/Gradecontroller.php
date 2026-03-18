@@ -12,24 +12,24 @@ class GradeController extends Controller
 {
     public function index()
     {
-        $grades = Grade::with(['student', 'course'])
+        $grades = Grade::with(['student','course'])
             ->when(request('course_id'), fn($q) => $q->where('course_id', request('course_id')))
             ->when(request('period'),    fn($q) => $q->where('period', request('period')))
-            ->when(request('status') === 'approved', fn($q) => $q->where('average', '>=', 6))
-            ->when(request('status') === 'failed',   fn($q) => $q->where('average', '<', 6)->whereNotNull('average'))
+            ->when(request('status') === 'approved', fn($q) => $q->where('average','>=',6))
+            ->when(request('status') === 'failed',   fn($q) => $q->where('average','<',6)->whereNotNull('average'))
             ->when(request('status') === 'pending',  fn($q) => $q->whereNull('average'))
-            ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('updated_at')->paginate(20)->withQueryString();
 
         $courses = Course::orderBy('name')->get();
-        return view('education.grades.index', compact('grades', 'courses'));
+        $periods = Grade::distinct()->orderByDesc('period')->pluck('period');
+        return view('education.grades.index', compact('grades','courses','periods'));
     }
 
     public function create()
     {
         return view('education.grades.form', [
             'courses'  => Course::orderBy('name')->get(),
-            'students' => Student::where('status', 'active')->orderBy('name')->get(),
+            'students' => Student::where('status','active')->orderBy('name')->get(),
         ]);
     }
 
@@ -44,13 +44,9 @@ class GradeController extends Controller
             'grade_3'    => 'nullable|numeric|min:0|max:10',
             'notes'      => 'nullable|string|max:500',
         ]);
-
-        $vals = array_filter([$data['grade_1'] ?? null, $data['grade_2'] ?? null, $data['grade_3'] ?? null], fn($v) => $v !== null);
-        $data['average'] = count($vals) ? round(array_sum($vals) / count($vals), 2) : null;
-
+        $data['average'] = $this->calcAverage($data);
         Grade::create($data);
-        return redirect()->route('education.grades.index')
-            ->with('success', 'Calificación registrada correctamente.');
+        return redirect()->route('education.grades.index')->with('success', '✅ Calificación registrada.');
     }
 
     public function edit(Grade $grade)
@@ -58,7 +54,7 @@ class GradeController extends Controller
         return view('education.grades.form', [
             'grade'    => $grade,
             'courses'  => Course::orderBy('name')->get(),
-            'students' => Student::where('status', 'active')->orderBy('name')->get(),
+            'students' => Student::where('status','active')->orderBy('name')->get(),
         ]);
     }
 
@@ -70,13 +66,9 @@ class GradeController extends Controller
             'grade_3' => 'nullable|numeric|min:0|max:10',
             'notes'   => 'nullable|string|max:500',
         ]);
-
-        $vals = array_filter([$data['grade_1'] ?? null, $data['grade_2'] ?? null, $data['grade_3'] ?? null], fn($v) => $v !== null);
-        $data['average'] = count($vals) ? round(array_sum($vals) / count($vals), 2) : null;
-
+        $data['average'] = $this->calcAverage($data);
         $grade->update($data);
-        return redirect()->route('education.grades.index')
-            ->with('success', 'Calificación actualizada.');
+        return redirect()->route('education.grades.index')->with('success', '✅ Calificación actualizada.');
     }
 
     public function destroy(Grade $grade)
@@ -87,21 +79,20 @@ class GradeController extends Controller
 
     public function bulkStore(Request $request)
     {
-        $request->validate([
-            'course_id' => 'required|exists:courses,id',
-            'period'    => 'required|string',
-            'grades'    => 'required|array',
-        ]);
-
+        $request->validate(['course_id'=>'required|exists:courses,id','period'=>'required|string','grades'=>'required|array']);
         foreach ($request->grades as $g) {
-            $vals = array_filter([$g['grade_1'] ?? null, $g['grade_2'] ?? null, $g['grade_3'] ?? null], fn($v) => $v !== null);
+            $avg = $this->calcAverage($g);
             Grade::updateOrCreate(
-                ['student_id' => $g['student_id'], 'course_id' => $request->course_id, 'period' => $request->period],
-                array_merge($g, ['average' => count($vals) ? round(array_sum($vals) / count($vals), 2) : null])
+                ['student_id'=>$g['student_id'],'course_id'=>$request->course_id,'period'=>$request->period],
+                array_merge($g, ['average'=>$avg])
             );
         }
+        return redirect()->route('education.grades.index')->with('success', '✅ Calificaciones guardadas en bloque.');
+    }
 
-        return redirect()->route('education.grades.index')
-            ->with('success', 'Calificaciones guardadas en bloque.');
+    private function calcAverage(array $data): ?float
+    {
+        $vals = array_filter([$data['grade_1']??null,$data['grade_2']??null,$data['grade_3']??null], fn($v)=>$v!==null&&$v!=='');
+        return count($vals) ? round(array_sum($vals)/count($vals), 2) : null;
     }
 }
