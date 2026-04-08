@@ -27,32 +27,41 @@
         {{-- Filtros --}}
         <div class="card border-0 shadow-xs mb-4" style="border-radius:14px;">
             <div class="card-body p-3">
-                <form method="GET" class="row g-2 align-items-end">
+                <form method="GET" class="row g-2 align-items-center">
+
                     <div class="col-md-4">
-                        <label class="form-label text-xs text-secondary mb-1">Buscar</label>
                         <input type="text" name="search" class="form-control form-control-sm"
-                            placeholder="Nombre, email o código…" value="{{ request('search') }}">
+                            placeholder="Buscar por nombre, email o código…"
+                            value="{{ request('search') }}">
                     </div>
+
                     <div class="col-md-3">
-                        <label class="form-label text-xs text-secondary mb-1">Programa</label>
-                        <select name="program_id" class="form-control form-control-sm">
-                            <option value="">Todos los programas</option>
+                        <select name="program_id" class="form-select form-select-sm">
+                            <option value="">Programa</option>
                             @foreach($programs as $p)
-                                <option value="{{ $p->id }}" {{ request('program_id') == $p->id ? 'selected' : '' }}>{{ $p->name }}</option>
+                                <option value="{{ $p->id }}" {{ request('program_id') == $p->id ? 'selected' : '' }}>
+                                    {{ $p->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
+
                     <div class="col-md-2">
-                        <label class="form-label text-xs text-secondary mb-1">Estado</label>
-                        <select name="status" class="form-control form-control-sm">
-                            <option value="">Todos</option>
-                            <option value="active"    {{ request('status')==='active'    ? 'selected':'' }}>Activo</option>
-                            <option value="inactive"  {{ request('status')==='inactive'  ? 'selected':'' }}>Inactivo</option>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Estado</option>
+                            <option value="active" {{ request('status')==='active' ? 'selected':'' }}>Activo</option>
+                            <option value="inactive" {{ request('status')==='inactive' ? 'selected':'' }}>Inactivo</option>
                             <option value="graduated" {{ request('status')==='graduated' ? 'selected':'' }}>Graduado</option>
                         </select>
                     </div>
-                    <div class="col-md-1"><button type="submit" class="btn btn-dark btn-sm w-100">Buscar</button></div>
-                    <div class="col-md-2"><a href="{{ route('education.students.index') }}" class="btn btn-outline-secondary btn-sm w-100">Limpiar</a></div>
+
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-dark btn-sm w-50 mb-0">Buscar</button>
+                        <a href="{{ route('education.students.index') }}" class="btn btn-outline-secondary btn-sm w-50 mb-0">
+                            Limpiar
+                        </a>
+                    </div>
+
                 </form>
             </div>
         </div>
@@ -103,22 +112,33 @@
                                     @endif
                                 </td>
                                 <td class="text-end pe-4">
-                                    <a href="{{ route('education.students.edit', $s) }}" class="btn btn-xs btn-outline-secondary mb-0 me-1 px-2 py-1">
+
+                                    <a href="{{ route('education.students.edit', $s) }}"
+                                    class="btn btn-xs btn-outline-secondary mb-0 me-1 px-2 py-1">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('education.students.destroy', $s) }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('¿Eliminar a {{ addslashes($s->name) }}?')">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-xs btn-outline-danger mb-0 px-2 py-1"><i class="fas fa-trash"></i></button>
-                                    </form>
+
+                                    <button 
+                                        type="button"
+                                        class="btn btn-xs btn-outline-danger mb-0 px-2 py-1 btn-delete"
+                                        data-id="{{ $s->id }}"
+                                        data-name="{{ $s->name }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </td>
                             </tr>
                             @empty
-                            <tr><td colspan="7" class="text-center py-5 text-secondary">
-                                No se encontraron estudiantes.
-                                <a href="{{ route('education.students.create') }}">Registrar el primero</a>
-                            </td></tr>
+                            <tr>
+                                    <td colspan="7" class="text-center py-5 text-secondary">
+                                    No se encontraron estudiantes.
+                                    <a href="{{ route('education.students.create') }}">Registrar el primero</a>
+                                </td>
+                            </tr>
                             @endforelse
+                            <form id="deleteForm" method="POST" style="display:none;">
+                                @csrf
+                                @method('DELETE')
+                            </form>
                         </tbody>
                     </table>
                 </div>
@@ -130,5 +150,60 @@
 
     </div>
     <x-app.footer />
+    <form id="deleteForm" method="POST" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar estudiante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p id="deleteMessage"></p>
+            </div>
+
+            <div class="modal-footer">
+                <button id="confirmDelete" class="btn btn-danger">Sí, eliminar</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            let studentId = null;
+
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const message = document.getElementById('deleteMessage');
+            const deleteForm = document.getElementById('deleteForm');
+
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function () {
+
+                    studentId = this.dataset.id;
+                    let name = this.dataset.name;
+
+                    message.textContent = `¿Seguro que deseas eliminar a ${name}?`;
+
+                    modal.show();
+                });
+            });
+
+            document.getElementById('confirmDelete').addEventListener('click', function () {
+
+                deleteForm.action = `/education/students/${studentId}`;
+                deleteForm.submit();
+
+            });
+
+        });
+    </script>
 </main>
 </x-app-layout>

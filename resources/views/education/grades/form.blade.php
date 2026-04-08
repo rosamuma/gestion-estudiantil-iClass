@@ -1,16 +1,16 @@
 <x-app-layout>
 <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <x-app.navbar />
-    <div class="px-4 py-4 container-fluid">
+    <div class="px-4 py-5 container-fluid">
 
-        <div class="d-flex align-items-center mb-4">
-            <a href="{{ route('education.grades.index') }}" class="btn btn-sm btn-outline-secondary me-3">
-                <i class="fas fa-arrow-left me-1"></i> Volver
-            </a>
-            <div>
+        <div class="d-flex align-items-center mb-5 justify-content-between">
+            <div class="ms-4 px-2">
                 <h4 class="font-weight-bold mb-0">{{ isset($grade) ? 'Editar Calificación' : 'Nueva Calificación' }}</h4>
                 <p class="text-secondary text-sm mb-0">El promedio se calcula automáticamente</p>
             </div>
+            <a href="{{ route('education.grades.index') }}" class="btn btn-sm btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
         </div>
 
         <div class="row justify-content-center">
@@ -66,26 +66,41 @@
 
                             <h6 class="text-uppercase text-secondary text-xs font-weight-bolder mb-3 mt-3">Notas (0 – 10)</h6>
                             <div class="row">
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-3 mb-3">
                                     <label class="form-label text-sm font-weight-bold">Nota 1</label>
                                     <input type="number" name="grade_1" step="0.01" min="0" max="10"
                                         class="form-control text-center @error('grade_1') is-invalid @enderror"
                                         value="{{ old('grade_1', $grade->grade_1 ?? '') }}"
-                                        id="g1" oninput="calcAvg()">
+                                        id="g1" 
+                                        oninput="this.value = Math.max(0, Math.min(10, this.value)); calcAvg();"
+                                        onblur="calcAvg()">
                                 </div>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-3 mb-3">
                                     <label class="form-label text-sm font-weight-bold">Nota 2</label>
                                     <input type="number" name="grade_2" step="0.01" min="0" max="10"
                                         class="form-control text-center"
                                         value="{{ old('grade_2', $grade->grade_2 ?? '') }}"
-                                        id="g2" oninput="calcAvg()">
+                                        id="g2" 
+                                        oninput="this.value = Math.max(0, Math.min(10, this.value)); calcAvg();"
+                                        onblur="calcAvg()">
                                 </div>
-                                <div class="col-md-4 mb-3">
+                                <div class="col-md-3 mb-3">
                                     <label class="form-label text-sm font-weight-bold">Nota 3</label>
                                     <input type="number" name="grade_3" step="0.01" min="0" max="10"
-                                        class="form-control text-center"
+                                        class="form-control text-center" 
                                         value="{{ old('grade_3', $grade->grade_3 ?? '') }}"
-                                        id="g3" oninput="calcAvg()">
+                                        id="g3" 
+                                        oninput="this.value = Math.max(0, Math.min(10, this.value)); calcAvg();"
+                                        onblur="calcAvg()">
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label text-sm font-weight-bold">Nota 4</label>
+                                    <input type="number" name="grade_4" step="0.01" min="0" max="10"
+                                        class="form-control text-center"
+                                        value="{{ old('grade_4', $grade->grade_4 ?? '') }}"
+                                        id="g4" 
+                                        oninput="this.value = Math.max(0, Math.min(10, this.value)); calcAvg();"
+                                        onblur="calcAvg()">
                                 </div>
                             </div>
 
@@ -120,19 +135,78 @@
 
 @push('scripts')
 <script>
-function calcAvg() {
-    const vals = [parseFloat(document.getElementById('g1').value), parseFloat(document.getElementById('g2').value), parseFloat(document.getElementById('g3').value)].filter(v => !isNaN(v));
-    const d = document.getElementById('avg-display');
-    const b = document.getElementById('avg-badge');
-    if (!vals.length) { d.textContent = '—'; b.textContent = ''; return; }
-    const avg = vals.reduce((a,v) => a+v, 0) / vals.length;
-    d.textContent = avg.toFixed(2);
-    d.style.color = avg >= 6 ? '#10b981' : '#ef4444';
-    b.textContent = avg >= 6 ? 'Aprobado' : 'Reprobado';
-    b.style.background = avg >= 6 ? '#10b981' : '#ef4444';
-    b.style.color = 'white';
-}
-document.addEventListener('DOMContentLoaded', calcAvg);
+    function calcAvg() {
+
+        const weights = [0.2, 0.2, 0.3, 0.3];
+
+        const inputs = [
+            document.getElementById('g1'),
+            document.getElementById('g2'),
+            document.getElementById('g3'),
+            document.getElementById('g4')
+        ];
+
+        let total = 0;
+        let weightSum = 0;
+
+        inputs.forEach((input, i) => {
+            let val = parseFloat(input.value);
+
+            if (!isNaN(val)) {
+
+                if (val < 0) val = 0;
+                if (val > 10) val = 10;
+
+                input.value = val;
+
+                total += val * weights[i];
+                weightSum += weights[i];
+            }
+        });
+
+        const d = document.getElementById('avg-display');
+        const b = document.getElementById('avg-badge');
+
+        if (weightSum === 0) {
+            d.textContent = '—';
+            b.textContent = '';
+            return;
+        }
+
+        const avg = total / weightSum;
+
+        d.style.transform = 'scale(1.2)';
+        setTimeout(() => d.style.transform = 'scale(1)', 150);
+
+        d.textContent = avg.toFixed(2);
+
+        if (avg < 6) {
+            d.style.color = '#ef4444';
+            b.textContent = 'Reprobado';
+            b.className = 'badge bg-danger mt-1';
+        } else if (avg < 8) {
+            d.style.color = '#f59e0b';
+            b.textContent = 'Aprobado';
+            b.className = 'badge bg-warning mt-1';
+        } else if (avg < 9) {
+            d.style.color = '#3b82f6';
+            b.textContent = 'Sobresaliente';
+            b.className = 'badge bg-info mt-1';
+        } else {
+            d.style.color = '#10b981';
+            b.textContent = 'Excelente';
+            b.className = 'badge bg-success mt-1';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', calcAvg);
 </script>
+
 @endpush
+
+<style>
+#avg-display {
+    transition: all 0.2s ease;
+}
+</style>
 </x-app-layout>

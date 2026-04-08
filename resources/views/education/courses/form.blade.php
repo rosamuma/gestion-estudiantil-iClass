@@ -3,14 +3,14 @@
     <x-app.navbar />
     <div class="px-4 py-4 container-fluid">
 
-        <div class="d-flex align-items-center mb-4">
-            <a href="{{ route('education.courses.index') }}" class="btn btn-sm btn-outline-secondary me-3">
-                <i class="fas fa-arrow-left me-1"></i> Volver
-            </a>
-            <div>
+        <div class="d-flex align-items-center mb-5 justify-content-between">
+            <div class="ms-4 px-2">
                 <h4 class="font-weight-bold mb-0">{{ isset($course) ? 'Editar Curso' : 'Nuevo Curso' }}</h4>
                 <p class="text-secondary text-sm mb-0">{{ isset($course) ? 'Actualiza la información del curso' : 'Registra un nuevo curso académico' }}</p>
             </div>
+            <a href="{{ route('education.courses.index') }}" class="btn btn-sm btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
         </div>
 
         <div class="row justify-content-center">

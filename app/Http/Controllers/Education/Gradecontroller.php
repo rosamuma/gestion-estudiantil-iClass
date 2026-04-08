@@ -39,9 +39,10 @@ class GradeController extends Controller
             'student_id' => 'required|exists:students,id',
             'course_id'  => 'required|exists:courses,id',
             'period'     => 'required|string|max:20',
-            'grade_1'    => 'nullable|numeric|min:0|max:10',
-            'grade_2'    => 'nullable|numeric|min:0|max:10',
-            'grade_3'    => 'nullable|numeric|min:0|max:10',
+            'grade_1'    => 'nullable|numeric|between:0,10',
+            'grade_2'    => 'nullable|numeric|between:0,10',
+            'grade_3'    => 'nullable|numeric|between:0,10',
+            'grade_4'    => 'nullable|numeric|between:0,10',
             'notes'      => 'nullable|string|max:500',
         ]);
         $data['average'] = $this->calcAverage($data);
@@ -61,9 +62,10 @@ class GradeController extends Controller
     public function update(Request $request, Grade $grade)
     {
         $data = $request->validate([
-            'grade_1' => 'nullable|numeric|min:0|max:10',
-            'grade_2' => 'nullable|numeric|min:0|max:10',
-            'grade_3' => 'nullable|numeric|min:0|max:10',
+            'grade_1' => 'nullable|numeric|between:0,10',
+            'grade_2' => 'nullable|numeric|between:0,10',
+            'grade_3' => 'nullable|numeric|between:0,10',
+            'grade_4' => 'nullable|numeric|between:0,10',
             'notes'   => 'nullable|string|max:500',
         ]);
         $data['average'] = $this->calcAverage($data);
@@ -92,7 +94,25 @@ class GradeController extends Controller
 
     private function calcAverage(array $data): ?float
     {
-        $vals = array_filter([$data['grade_1']??null,$data['grade_2']??null,$data['grade_3']??null], fn($v)=>$v!==null&&$v!=='');
-        return count($vals) ? round(array_sum($vals)/count($vals), 2) : null;
+        $weights = [0.2, 0.2, 0.3, 0.3];
+
+        $grades = [
+            $data['grade_1'] ?? null,
+            $data['grade_2'] ?? null,
+            $data['grade_3'] ?? null,
+            $data['grade_4'] ?? null,
+        ];
+
+        $total = 0;
+        $weightSum = 0;
+
+        foreach ($grades as $i => $g) {
+            if ($g !== null && $g !== '') {
+                $total += $g * $weights[$i];
+                $weightSum += $weights[$i];
+            }
+        }
+
+        return $weightSum ? round($total / $weightSum, 2) : null;
     }
 }

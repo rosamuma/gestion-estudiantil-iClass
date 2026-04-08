@@ -2,25 +2,21 @@
 <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg" style="background:#f5f7fb;">
     <x-app.navbar />
 
-    <div class="px-4 py-4 container-fluid">
+    <div class="px-4 py-5 container-fluid">
 
         <!-- Header -->
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <div class="d-flex align-items-center">
-                <a href="{{ route('education.attendance.index') }}" 
-                   class="btn btn-light btn-sm me-3 shadow-sm" 
-                   style="border-radius:10px;">
-                    ← Volver
-                </a>
-                <div>
-                    <h4 class="fw-bold mb-0 text-dark">
-                        {{ isset($attendance) ? 'Editar Asistencia' : 'Registrar Asistencia' }}
-                    </h4>
-                    <small class="text-muted">Registra la asistencia de un estudiante</small>
-                </div>
+        <div class="d-flex align-items-center justify-content-between mb-5">
+            <div class="ms-4 px-2">
+                <h4 class="fw-bold mb-0 text-dark">
+                    {{ isset($attendance) ? 'Editar Asistencia' : 'Registrar Asistencia' }}
+                </h4>
+                <p class="text-secondary text-sm mb-0">Registra la asistencia de un estudiante</p>
             </div>
+            <a href="{{ route('education.attendance.index') }}" 
+                class="btn btn-sm btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
         </div>
-
         <!-- Card -->
         <div class="row justify-content-center">
             <div class="col-lg-6">
@@ -46,7 +42,7 @@
 
                             <!-- Selects -->
                             <div class="mb-3">
-                                <label class="form-label fw-semibold text-dark">Estudiante</label>
+                                <label class="form-label font-weight-bold text-sm">Estudiante <span class="text-danger">*</span></label>
                                 <select name="student_id" class="form-control custom-input" required>
                                     <option value="">Seleccionar estudiante</option>
                                     @foreach($students as $s)
@@ -56,9 +52,8 @@
                                     @endforeach
                                 </select>
                             </div>
-
                             <div class="mb-3">
-                                <label class="form-label fw-semibold text-dark">Curso</label>
+                                <label class="form-label font-weight-bold text-sm">Curso <span class="text-danger">*</span></label>
                                 <select name="course_id" class="form-control custom-input" required>
                                     <option value="">Seleccionar curso</option>
                                     @foreach($courses as $c)
@@ -70,7 +65,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label fw-semibold text-dark">Fecha</label>
+                                <label class="form-label font-weight-bold text-sm">Fecha<span class="text-danger">*</span></label>
                                 <input type="date" name="date" 
                                        class="form-control custom-input"
                                        value="{{ old('date', date('Y-m-d')) }}" required>
@@ -78,17 +73,17 @@
 
                             @else
                             <div class="p-3 mb-3" style="background:#f1f5f9;border-radius:12px;">
-                                <p class="mb-1"><strong>Estudiante:</strong> {{ $attendance->student->name }}</p>
-                                <p class="mb-1"><strong>Curso:</strong> {{ $attendance->course->name }}</p>
+                                <p><strong>Estudiante:</strong> {{ optional($attendance->student)->name }}</p>
+                                <p><strong>Curso:</strong> {{ optional($attendance->course)->name }}</p>
                                 <p class="mb-0"><strong>Fecha:</strong> {{ $attendance->date->format('d/m/Y') }}</p>
                             </div>
                             @endunless
 
                             <!-- Estado -->
                             <div class="mb-4">
-                                <label class="form-label fw-semibold text-dark">Estado</label>
+                                <label class="form-label font-weight-bold text-sm">Estado<span class="text-danger">*</span></label>
 
-                                <div class="d-flex gap-2">
+                                <div class="d-flex gap-2 {{ $errors->has('status') ? 'border border-danger p-2 rounded' : '' }}">
                                     @foreach([
                                         'present'=>['#22c55e','Presente'],
                                         'absent'=>['#ef4444','Ausente'],
@@ -97,30 +92,32 @@
 
                                     <input type="radio" class="btn-check" name="status" id="st-{{ $val }}"
                                         value="{{ $val }}"
-                                        {{ old('status', $attendance->status ?? 'present') === $val ? 'checked' : '' }}>
+                                        required
+                                        {{ old('status', $attendance->status ?? '') === $val ? 'checked' : '' }}>
 
                                     <label for="st-{{ $val }}" 
-                                           class="flex-fill text-center py-2"
-                                           style="
-                                               border:1px solid #e5e7eb;
-                                               border-radius:12px;
-                                               cursor:pointer;
-                                               transition:0.2s;
-                                           "
-                                           onmouseover="this.style.background='{{ $color }}20'"
-                                           onmouseout="this.style.background='transparent'">
+                                        class="flex-fill text-center py-2 status-label"
+                                        data-color="{{ $color }}"
+                                        style="
+                                            border:1px solid #e5e7eb;
+                                            border-radius:12px;
+                                            cursor:pointer;
+                                            transition:0.2s;
+                                    ">
                                         <span style="color:{{ $color }}; font-weight:600;">
                                             {{ $label }}
                                         </span>
                                     </label>
-
                                     @endforeach
                                 </div>
+                                @error('status')
+                                    <small class="text-danger">{{ $message }}</small>
+                                @enderror
                             </div>
 
                             <!-- Observaciones -->
                             <div class="mb-3">
-                                <label class="form-label fw-semibold text-dark">Observaciones</label>
+                                <label class="form-label font-weight-bold text-sm">Observaciones</label>
                                 <textarea name="notes" 
                                           class="form-control custom-input"
                                           rows="2"
@@ -151,6 +148,34 @@
     </div>
 
     <x-app.footer />
+
+    <script>
+        document.querySelectorAll('.btn-check').forEach(input => {
+            input.addEventListener('change', function () {
+
+                document.querySelectorAll('.status-label').forEach(l => {
+                    l.style.background = 'transparent';
+                });
+
+                let label = document.querySelector(`label[for="${this.id}"]`);
+                let color = label.dataset.color;
+
+                label.style.background = color + '20';
+            });
+        });
+        document.querySelector('form').addEventListener('submit', function(e) {
+
+            const selected = document.querySelector('input[name="status"]:checked');
+
+            if (!selected) {
+                e.preventDefault();
+
+                const container = document.querySelector('.status-label').parentElement;
+                container.classList.add('border','border-danger','p-2','rounded');
+            }
+
+        });
+    </script>
 </main>
 
 <style>

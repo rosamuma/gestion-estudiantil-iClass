@@ -12,21 +12,39 @@ class AttendanceController extends Controller
 {
     public function index()
     {
-        $attendances = Attendance::with(['student','course'])
+        $query = Attendance::with(['student','course'])
             ->when(request('course_id'), fn($q) => $q->where('course_id', request('course_id')))
-            ->when(request('date'),      fn($q) => $q->where('date', request('date')))
-            ->when(request('status'),    fn($q) => $q->where('status', request('status')))
-            ->orderByDesc('date')->orderBy('student_id')
-            ->paginate(20)->withQueryString();
+            ->when(request('date_from') && request('date_to'), function ($q) {
+                $q->whereBetween('date', [request('date_from'), request('date_to')]);
+            })
+            ->when(request('status'), fn($q) => $q->where('status', request('status')));
 
-        $courses      = Course::where('status','active')->orderBy('name')->get();
-        $presentToday = Attendance::whereDate('date', today())->where('status','present')->count();
-        $absentToday  = Attendance::whereDate('date', today())->where('status','absent')->count();
-        $justToday    = Attendance::whereDate('date', today())->where('status','justified')->count();
-        $totalToday   = $presentToday + $absentToday + $justToday;
-        $avgPct       = $totalToday > 0 ? round(($presentToday + $justToday) / $totalToday * 100) : 0;
+        $attendances = (clone $query)
+            ->orderByDesc('date')
+            ->orderBy('student_id')
+            ->paginate(20)
+            ->withQueryString();
 
-        return view('education.attendance.index', compact('attendances','courses','presentToday','absentToday','justToday','avgPct'));
+        $presentToday = (clone $query)->where('status','present')->count();
+        $absentToday  = (clone $query)->where('status','absent')->count();
+        $justToday    = (clone $query)->where('status','justified')->count();
+
+        $total = $presentToday + $absentToday + $justToday;
+
+        $avgPct = $total > 0 
+            ? round(($presentToday + $justToday) / $total * 100) 
+            : 0;
+
+        $courses = Course::where('status','active')->orderBy('name')->get();
+
+        return view('education.attendance.index', compact(
+            'attendances',
+            'courses',
+            'presentToday',
+            'absentToday',
+            'justToday',
+            'avgPct'
+        ));
     }
 
     public function create()
@@ -45,6 +63,10 @@ class AttendanceController extends Controller
             'date'       => 'required|date',
             'status'     => 'required|in:present,absent,justified',
             'notes'      => 'nullable|string|max:500',
+        ], 
+        [
+            'status.required' => 'El estado es obligatorio.',
+            'status.in'       => 'El estado seleccionado no es válido.',
         ]);
         Attendance::updateOrCreate(
             ['student_id'=>$data['student_id'],'course_id'=>$data['course_id'],'date'=>$data['date']],
@@ -55,6 +77,7 @@ class AttendanceController extends Controller
 
     public function edit(Attendance $attendance)
     {
+        $attendance->load(['student', 'course']);
         return view('education.attendance.form', [
             'attendance' => $attendance,
             'courses'    => Course::where('status','active')->orderBy('name')->get(),

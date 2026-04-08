@@ -1,18 +1,18 @@
 <x-app-layout>
 <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <x-app.navbar />
-    <div class="px-4 py-4 container-fluid">
+    <div class="px-4 py-5 container-fluid">
 
-        <div class="d-flex align-items-center mb-4">
-            <a href="{{ route('education.teachers.index') }}" class="btn btn-sm btn-outline-secondary me-3">
-                <i class="fas fa-arrow-left me-1"></i> Volver
-            </a>
-            <div>
+        <div class="d-flex align-items-center justify-content-between mb-5">
+            <div class="ms-4 px-2">
                 <h4 class="font-weight-bold mb-0">{{ isset($teacher) ? 'Editar Docente' : 'Nuevo Docente' }}</h4>
                 <p class="text-secondary text-sm mb-0">Gestión de docentes de la institución</p>
             </div>
+            <a href="{{ route('education.teachers.index') }}" 
+                class="btn btn-sm btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
         </div>
-
         <div class="row justify-content-center">
             <div class="col-lg-7">
                 <div class="card border-0 shadow-xs" style="border-radius:16px;">
@@ -50,9 +50,9 @@
                                     @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-5 mb-3">
-                                    <label class="form-label text-sm font-weight-bold">Especialidad</label>
+                                    <label class="form-label text-sm font-weight-bold">Especialidad<span class="text-danger">*</span></label>
                                     <input type="text" name="specialty" class="form-control"
-                                        value="{{ old('specialty', $teacher->specialty ?? '') }}" placeholder="Ej: Matemáticas">
+                                        value="{{ old('specialty', $teacher->specialty ?? '') }}" required placeholder="Ej: Matemáticas">
                                 </div>
                             </div>
 

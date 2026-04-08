@@ -1,4 +1,5 @@
-<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 bg-slate-900 fixed-start" id="sidenav-main">
+<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 bg-slate-900 fixed-start" id="sidenav-main" style="overflow-x: hidden !important; max-width: 100%;">
+    
 
     {{-- Header --}}
     <div class="sidenav-header">
@@ -12,11 +13,11 @@
                     <path d="M13.06 15.473a48.45 48.45 0 017.666-3.282c.134 1.414.22 2.843.255 4.285a.75.75 0 01-.46.71 47.878 47.878 0 00-8.105 4.342.75.75 0 01-.832 0 47.877 47.877 0 00-8.104-4.342.75.75 0 01-.461-.71c.035-1.442.121-2.87.255-4.286A48.4 48.4 0 016 13.18v1.27a1.5 1.5 0 00-.14 2.508c-.09.38-.222.753-.397 1.11.452.213.901.434 1.346.661a6.729 6.729 0 00.551-1.608 1.5 1.5 0 00.14-2.67v-.645a48.549 48.549 0 013.44 1.668 2.25 2.25 0 002.12 0z"/>
                 </svg>
             </div>
-            <span class="font-weight-bold text-white" style="font-size:15px;letter-spacing:0.3px;">EduPlatform</span>
+            <span class="font-weight-bold text-white" style="font-size:15px;letter-spacing:0.3px;">iClass</span>
         </a>
     </div>
 
-    <div class="collapse navbar-collapse px-4 w-auto" id="sidenav-collapse-main">
+    <div class="collapse navbar-collapse px-4" id="sidenav-collapse-main">
         <ul class="navbar-nav">
 
             {{-- Dashboard --}}

@@ -10,7 +10,7 @@
             </div>
             <div class="ms-auto">
                 <a href="{{ route('education.teachers.create') }}" class="btn btn-dark btn-sm mb-0">
-                    <i class="fas fa-plus me-1"></i> Nuevo Docente
+                    <i class="fas fa-plus me-1"></i> Registrar Docente
                 </a>
             </div>
         </div>
@@ -25,20 +25,36 @@
         {{-- Filtros --}}
         <div class="card border-0 shadow-xs mb-4" style="border-radius:14px;">
             <div class="card-body p-3">
-                <form method="GET" class="row g-2 align-items-end">
+                <form method="GET" class="row g-2 align-items-center">
+
                     <div class="col-md-5">
-                        <input type="text" name="search" class="form-control form-control-sm"
-                            placeholder="Buscar por nombre o especialidad…" value="{{ request('search') }}">
+                        <input 
+                            type="text" 
+                            name="search" 
+                            class="form-control form-control-sm"
+                            placeholder="Buscar por nombre o especialidad…"
+                            value="{{ request('search') }}">
                     </div>
+
                     <div class="col-md-2">
-                        <select name="status" class="form-control form-control-sm">
-                            <option value="">Todos</option>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Estado</option>
                             <option value="active"   {{ request('status')==='active'  ?'selected':'' }}>Activo</option>
                             <option value="inactive" {{ request('status')==='inactive'?'selected':'' }}>Inactivo</option>
                         </select>
                     </div>
-                    <div class="col-md-2"><button type="submit" class="btn btn-dark btn-sm w-100">Buscar</button></div>
-                    <div class="col-md-3"><a href="{{ route('education.teachers.index') }}" class="btn btn-outline-secondary btn-sm w-100">Limpiar</a></div>
+
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-dark btn-sm w-50 mb-0">
+                            Buscar
+                        </button>
+
+                        <a href="{{ route('education.teachers.index') }}" 
+                        class="btn btn-outline-secondary btn-sm w-50 mb-0">
+                        Limpiar
+                        </a>
+                    </div>
+
                 </form>
             </div>
         </div>
@@ -71,14 +87,18 @@
                                 <h5 class="font-weight-bold mb-0">{{ $t->courses_count }}</h5>
                             </div>
                             <div class="d-flex gap-2">
-                                <a href="{{ route('education.teachers.edit', $t) }}" class="btn btn-xs btn-outline-secondary px-2 py-1">
+                                <a href="{{ route('education.teachers.edit', $t) }}" 
+                                    class="btn btn-xs btn-outline-secondary mb-0 me-1 px-2 py-1">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('education.teachers.destroy', $t) }}" method="POST"
-                                    onsubmit="return confirm('¿Eliminar a {{ addslashes($t->name) }}?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-xs btn-outline-danger px-2 py-1"><i class="fas fa-trash"></i></button>
-                                </form>
+                                <button 
+                                    type="button"
+                                    class="btn btn-xs btn-outline-danger mb-0 px-2 py-1 btn-delete"
+                                    data-url="{{ route('education.teachers.destroy', $t) }}"
+                                    data-teacher="{{ $t->name }}"
+                                    title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -101,5 +121,67 @@
 
     </div>
     <x-app.footer />
+    <form id="deleteForm" method="POST" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
+
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar Docente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p id="deleteMessage"></p>
+            </div>
+
+            <div class="modal-footer">
+                <button id="confirmDelete" class="btn btn-danger">Sí, eliminar</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    let deleteUrl = null;
+
+    const modalEl = document.getElementById('deleteModal');
+    if (!modalEl) return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    const message = document.getElementById('deleteMessage');
+    const deleteForm = document.getElementById('deleteForm');
+    const confirmBtn = document.getElementById('confirmDelete');
+
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function () {
+
+            deleteUrl = this.dataset.url;
+            let teacher = this.dataset.teacher || 'este docente';
+
+            message.textContent = `¿Seguro que deseas eliminar el docente "${teacher}"?`;
+
+            modal.show();
+        });
+    });
+
+    confirmBtn.addEventListener('click', function () {
+
+        if (!deleteUrl) return;
+
+        deleteForm.action = deleteUrl;
+        deleteForm.submit();
+    });
+
+});
+</script>
 </main>
 </x-app-layout>

@@ -1,16 +1,16 @@
 <x-app-layout>
 <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <x-app.navbar />
-    <div class="px-4 py-4 container-fluid">
+    <div class="px-4 py-5 container-fluid">
 
-        <div class="d-flex align-items-center mb-4">
-            <a href="{{ route('education.students.index') }}" class="btn btn-sm btn-outline-secondary me-3">
-                <i class="fas fa-arrow-left me-1"></i> Volver
-            </a>
-            <div>
+        <div class="d-flex align-items-center mb-5 justify-content-between">
+            <div class="ms-4 px-2">
                 <h4 class="font-weight-bold mb-0">{{ isset($student) ? 'Editar Estudiante' : 'Nuevo Estudiante' }}</h4>
                 <p class="text-secondary text-sm mb-0">{{ isset($student) ? 'Actualiza los datos del estudiante' : 'Registra un nuevo estudiante en la plataforma' }}</p>
             </div>
+            <a href="{{ route('education.students.index') }}" class="btn btn-sm btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left me-1"></i> Volver
+            </a>
         </div>
 
         <div class="row justify-content-center">
@@ -39,7 +39,7 @@
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label text-sm font-weight-bold">Nombre completo <span class="text-danger">*</span></label>
                                     <input type="text" name="name" class="form-control @error('name') is-invalid @enderror"
-                                        value="{{ old('name', $student->name ?? '') }}" placeholder="Ej: María García López" required>
+                                        value="{{ old('name', $student->name ?? '') }}" placeholder="María Perez" required>
                                     @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                                 </div>
                                 <div class="col-md-6 mb-3">

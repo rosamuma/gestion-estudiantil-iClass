@@ -27,36 +27,46 @@
         {{-- Filtros --}}
         <div class="card border-0 shadow-xs mb-4" style="border-radius:14px;">
             <div class="card-body p-3">
-                <form method="GET" class="row g-2 align-items-end">
+                <form method="GET" class="row g-2 align-items-center">
+
                     <div class="col-md-4">
-                        <label class="form-label text-xs text-secondary mb-1">Curso</label>
-                        <select name="course_id" class="form-control form-control-sm">
-                            <option value="">Todos los cursos</option>
+                        <select name="course_id" class="form-select form-select-sm">
+                            <option value="">Curso</option>
                             @foreach($courses as $c)
-                                <option value="{{ $c->id }}" {{ request('course_id') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                                <option value="{{ $c->id }}" {{ request('course_id') == $c->id ? 'selected' : '' }}>
+                                    {{ $c->name }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
+
                     <div class="col-md-2">
-                        <label class="form-label text-xs text-secondary mb-1">Período</label>
-                        <select name="period" class="form-control form-control-sm">
-                            <option value="">Todos</option>
+                        <select name="period" class="form-select form-select-sm">
+                            <option value="">Período</option>
                             @foreach($periods as $p)
-                                <option value="{{ $p }}" {{ request('period') === $p ? 'selected' : '' }}>{{ $p }}</option>
+                                <option value="{{ $p }}" {{ request('period') === $p ? 'selected' : '' }}>
+                                    {{ $p }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
+
                     <div class="col-md-2">
-                        <label class="form-label text-xs text-secondary mb-1">Estado</label>
-                        <select name="status" class="form-control form-control-sm">
-                            <option value="">Todos</option>
-                            <option value="approved" {{ request('status')==='approved'?'selected':'' }}>✅ Aprobado</option>
-                            <option value="failed"   {{ request('status')==='failed'  ?'selected':'' }}>❌ Reprobado</option>
-                            <option value="pending"  {{ request('status')==='pending' ?'selected':'' }}>⏳ Sin nota</option>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Estado</option>
+                            <option value="approved" {{ request('status')==='approved' ? 'selected':'' }}>✅ Aprobado</option>
+                            <option value="failed" {{ request('status')==='failed' ? 'selected':'' }}>❌ Reprobado</option>
+                            <option value="pending" {{ request('status')==='pending' ? 'selected':'' }}>⏳ Sin nota</option>
                         </select>
                     </div>
-                    <div class="col-md-2"><button type="submit" class="btn btn-dark btn-sm w-100">Filtrar</button></div>
-                    <div class="col-md-2"><a href="{{ route('education.grades.index') }}" class="btn btn-outline-secondary btn-sm w-100">Limpiar</a></div>
+
+                    <div class="col-md-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-dark btn-sm w-50 mb-0">Filtrar</button>
+                        <a href="{{ route('education.grades.index') }}" class="btn btn-outline-secondary btn-sm w-50 mb-0">
+                            Limpiar
+                        </a>
+                    </div>
+
                 </form>
             </div>
         </div>
@@ -73,6 +83,7 @@
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Nota 1</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Nota 2</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Nota 3</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Nota 4</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-center">Promedio</th>
                                 @if(auth()->user()->isAdmin() || auth()->user()->isTeacher())
                                 <th class="pe-4"></th>
@@ -101,20 +112,24 @@
                                 <td class="text-center text-sm">{{ $g->grade_1 ?? '—' }}</td>
                                 <td class="text-center text-sm">{{ $g->grade_2 ?? '—' }}</td>
                                 <td class="text-center text-sm">{{ $g->grade_3 ?? '—' }}</td>
+                                <td class="text-center text-sm">{{ $g->grade_4 ?? '—' }}</td>
                                 <td class="text-center">
                                     <span class="font-weight-bold {{ $color }}">{{ $avg ?? '—' }}</span>
                                     <br><span class="badge badge-sm bg-gradient-{{ $status[0] }}" style="font-size:9px;">{{ $status[1] }}</span>
                                 </td>
                                 @if(auth()->user()->isAdmin() || auth()->user()->isTeacher())
                                 <td class="text-end pe-4">
-                                    <a href="{{ route('education.grades.edit', $g) }}" class="btn btn-xs btn-outline-secondary mb-0 me-1 px-2 py-1">
+                                    <a href="{{ route('education.grades.edit', $g) }}" 
+                                    class="btn btn-xs btn-outline-secondary mb-0 me-1 px-2 py-1">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('education.grades.destroy', $g) }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('¿Eliminar esta calificación?')">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-xs btn-outline-danger mb-0 px-2 py-1"><i class="fas fa-trash"></i></button>
-                                    </form>
+                                    <button 
+                                        type="button"
+                                        class="btn btn-xs btn-outline-danger mb-0 px-2 py-1 btn-delete"
+                                        data-url="{{ route('education.grades.destroy', $g) }}"
+                                        data-avg="{{ $g->average }}">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
                                 </td>
                                 @endif
                             </tr>
@@ -137,5 +152,72 @@
 
     </div>
     <x-app.footer />
+
+    <form id="deleteForm" method="POST" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
+
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar Registro de calificaciones</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p id="deleteMessage"></p>
+            </div>
+
+            <div class="modal-footer">
+                <button id="confirmDelete" class="btn btn-danger">Sí, eliminar</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            let deleteUrl  = null;
+
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const message = document.getElementById('deleteMessage');
+            const deleteForm = document.getElementById('deleteForm');
+
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function () {
+
+                    deleteUrl  = this.dataset.url;
+                    let avg = this.dataset.avg;
+
+                    message.textContent = `¿Seguro que deseas eliminar el registro con promedio "${avg ?? 'sin nota'}"?`;
+
+                    modal.show();
+                });
+
+            });
+
+            document.getElementById('confirmDelete').addEventListener('click', function () {
+
+                deleteForm.action = deleteUrl;
+                deleteForm.submit();
+
+            });
+
+        });
+    </script>
+
 </main>
 </x-app-layout>
+
+
+
+
+
+
+

@@ -69,7 +69,7 @@
         
         {{-- Gráficos --}}
         <div class="row mb-4">
-            {{-- Promedios por curso --}}
+            {{-- Promedios de notas por curso --}}
             <div class="col-lg-7 mb-3">
                 <div class="card border-0 shadow-xs h-100" style="border-radius:14px;">
                     <div class="card-header pb-0 pt-3 px-4 border-0">

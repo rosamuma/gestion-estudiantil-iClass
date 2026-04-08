@@ -2,7 +2,7 @@
 <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
     <x-app.navbar />
 
-    <div class="px-4 py-4 container-fluid">
+    <div class="px-4 py-5 container-fluid">
 
         <div class="d-sm-flex align-items-center mb-4">
             <div>
@@ -46,24 +46,20 @@
                 <form method="GET" class="row g-2 align-items-end">
                     <div class="col-md-5">
                         <input type="text" name="search" class="form-control form-control-sm"
-                            placeholder="Buscar por nombre o código…" value="{{ request('search') }}">
+                            placeholder="Buscar por nombre o código…" 
+                            value="{{ request('search') }}">
                     </div>
-
                     <div class="col-md-3">
-                        <select name="status" class="form-control form-control-sm">
+                        <select name="status" class="form-select form-select-sm">
                             <option value="">Todos los estados</option>
                             <option value="active" {{ request('status')==='active' ? 'selected':'' }}>Activo</option>
                             <option value="pending" {{ request('status')==='pending' ? 'selected':'' }}>Pendiente</option>
                             <option value="finished" {{ request('status')==='finished' ? 'selected':'' }}>Finalizado</option>
                         </select>
                     </div>
-
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-dark btn-sm w-100">Filtrar</button>
-                    </div>
-
-                    <div class="col-md-2">
-                        <a href="{{ route('education.courses.index') }}" class="btn btn-outline-secondary btn-sm w-100">
+                    <div class="col-md-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-dark btn-sm w-50 mb-0">Filtrar</button>
+                        <a href="{{ route('education.courses.index') }}" class="btn btn-outline-secondary btn-sm w-50 mb-0">
                             Limpiar
                         </a>
                     </div>
@@ -148,22 +144,15 @@
                                    class="btn btn-xs btn-outline-secondary mb-0 me-1 px-2 py-1">
                                     <i class="fas fa-edit"></i>
                                 </a>
-
-                                <form action="{{ route('education.courses.destroy', $c) }}"
-                                      method="POST"
-                                      class="d-inline"
-                                      onsubmit="return confirm('¿Eliminar {{ addslashes($c->name) }}?')">
-
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button class="btn btn-xs btn-outline-danger mb-0 px-2 py-1">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-
-                                </form>
-
+                                <button 
+                                    type="button"
+                                    class="btn btn-xs btn-outline-danger mb-0 px-2 py-1 btn-delete"
+                                    data-url="{{ route('education.courses.destroy', $c) }}"
+                                    data-name="{{ $c->name }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </td>
+
                             @endif
 
                         </tr>
@@ -196,6 +185,67 @@
     </div>
 
     <x-app.footer />
+
+<form id="deleteForm" method="POST" style="display:none;">
+    @csrf
+    @method('DELETE')
+</form>
+
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Eliminar curso</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <p id="deleteMessage"></p>
+      </div>
+
+      <div class="modal-footer">
+        <button id="confirmDelete" class="btn btn-danger">Sí, eliminar</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        let courseId = null;
+
+        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const message = document.getElementById('deleteMessage');
+        const deleteForm = document.getElementById('deleteForm');
+
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+            btn.addEventListener('click', function () {
+
+                deleteUrl  = this.dataset.url;
+                let name = this.dataset.name;
+
+                message.textContent = `¿Seguro que deseas eliminar el curso "${name}"?`;
+
+                modal.show();
+            });
+
+        });
+
+        document.getElementById('confirmDelete').addEventListener('click', function () {
+
+            deleteForm.action = deleteUrl;
+            deleteForm.submit();
+
+        });
+
+    });
+</script>
 
 </main>
 </x-app-layout>

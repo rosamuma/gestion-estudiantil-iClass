@@ -12,9 +12,8 @@
             </div>
             <div class="ms-auto">
                 <a href="{{ route('education.attendance.create') }}" 
-                   class="btn btn-sm px-3 text-white"
-                   style="background:#1e293b; border-radius:10px;">
-                    + Registrar
+                    class="btn btn-dark btn-sm mb-0">
+                    <i class="fas fa-plus me-1"></i>Registrar Asistencia
                 </a>
             </div>
         </div>
@@ -44,15 +43,14 @@
             </div>
         @endif
 
-        <!-- Filtros -->
-        <div class="card border-0 shadow-sm mb-4" style="border-radius:16px;">
-            <div class="card-body">
-                <form method="GET" class="row g-2 align-items-end">
+        {{-- Filtros --}}
+        <div class="card border-0 shadow-xs mb-4" style="border-radius:14px;">
+            <div class="card-body p-3">
+                <form method="GET" class="row g-2 align-items-center">
 
                     <div class="col-md-3">
-                        <label class="text-xs text-muted mb-1">Curso</label>
-                        <select name="course_id" class="form-control custom-input">
-                            <option value="">Todos</option>
+                        <select name="course_id" class="form-select form-select-sm">
+                            <option value="">Curso</option>
                             @foreach($courses as $c)
                                 <option value="{{ $c->id }}" {{ request('course_id') == $c->id ? 'selected' : '' }}>
                                     {{ $c->name }}
@@ -60,33 +58,41 @@
                             @endforeach
                         </select>
                     </div>
-
-                    <div class="col-md-3">
-                        <label class="text-xs text-muted mb-1">Fecha</label>
-                        <input type="date" name="date" class="form-control custom-input" value="{{ request('date') }}">
-                    </div>
-
                     <div class="col-md-2">
-                        <label class="text-xs text-muted mb-1">Estado</label>
-                        <select name="status" class="form-control custom-input">
-                            <option value="">Todos</option>
-                            <option value="present"   {{ request('status')==='present'?'selected':'' }}>Presente</option>
-                            <option value="absent"    {{ request('status')==='absent'?'selected':'' }}>Ausente</option>
+                        <input 
+                            type="date" 
+                            title="Desde"
+                            name="date_from" 
+                            class="form-control form-control-sm"
+                            value="{{ request('date_from') }}"
+                            placeholder="Desde">
+                    </div>
+                    <div class="col-md-2">
+                        <input 
+                            type="date" 
+                            title="Hasta"
+                            name="date_to" 
+                            class="form-control form-control-sm"
+                            value="{{ request('date_to') }}"
+                            placeholder="Hasta">
+                    </div>
+                    <div class="col-md-2">
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">Estado</option>
+                            <option value="present" {{ request('status')==='present'?'selected':'' }}>Presente</option>
+                            <option value="absent" {{ request('status')==='absent'?'selected':'' }}>Ausente</option>
                             <option value="justified" {{ request('status')==='justified'?'selected':'' }}>Justificado</option>
                         </select>
                     </div>
 
-                    <div class="col-md-2">
-                        <button class="btn w-100 text-white" style="background:#1e293b; border-radius:10px;">
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-dark btn-sm w-50 mb-0">
                             Filtrar
                         </button>
-                    </div>
 
-                    <div class="col-md-2">
                         <a href="{{ route('education.attendance.index') }}" 
-                           class="btn btn-light w-100"
-                           style="border-radius:10px;">
-                           Limpiar
+                        class="btn btn-outline-secondary btn-sm w-50 mb-0">
+                        Limpiar
                         </a>
                     </div>
 
@@ -142,7 +148,15 @@
 
                             <td class="text-center">
                                 <span class="badge-soft" style="background:{{ $color }}20; color:{{ $color }};">
-                                    {{ ucfirst($a->status) }}
+                                    @php
+                                        $labels = [
+                                            'present' => 'Presente',
+                                            'absent' => 'Ausente',
+                                            'justified' => 'Justificado'
+                                        ];
+                                    @endphp
+
+                                    {{ $labels[$a->status] ?? $a->status }}
                                 </span>
                             </td>
 
@@ -152,12 +166,17 @@
 
                             <td class="text-end pe-4">
                                 <a href="{{ route('education.attendance.edit', $a) }}" 
-                                   class="btn btn-light btn-sm me-1">✏️</a>
-
-                                <form action="{{ route('education.attendance.destroy', $a) }}" method="POST" class="d-inline">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-light btn-sm">🗑️</button>
-                                </form>
+                                    class="btn btn-xs btn-outline-secondary mb-0 me-1 px-2 py-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button 
+                                    type="button"
+                                    class="btn btn-xs btn-outline-danger mb-0 px-2 py-1 btn-delete"
+                                    data-url="{{ route('education.attendance.destroy', $a) }}"
+                                    data-student="{{ $a->student->name ?? 'Estudiante' }}"
+                                    data-date="{{ $a->date->format('d/m/Y') }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </td>
                         </tr>
 
@@ -183,6 +202,65 @@
     </div>
 
     <x-app.footer />
+
+    <form id="deleteForm" method="POST" style="display:none;">
+        @csrf
+        @method('DELETE')
+    </form>
+
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Eliminar asistencia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p id="deleteMessage"></p>
+            </div>
+
+            <div class="modal-footer">
+                <button id="confirmDelete" class="btn btn-danger">Sí, eliminar</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            let deleteUrl  = null;
+
+            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const message = document.getElementById('deleteMessage');
+            const deleteForm = document.getElementById('deleteForm');
+
+            document.querySelectorAll('.btn-delete').forEach(btn => {
+                btn.addEventListener('click', function () {
+
+                    deleteUrl  = this.dataset.url;
+                    let student = this.dataset.student;
+                    let date = this.dataset.date;
+
+                    message.textContent = `¿Seguro que deseas la asistencia de "${student}" del ${date}?`;
+
+                    modal.show();
+                });
+
+            });
+
+            document.getElementById('confirmDelete').addEventListener('click', function () {
+
+                deleteForm.action = deleteUrl;
+                deleteForm.submit();
+
+            });
+
+        });
+    </script>
 </main>
 
 <style>
